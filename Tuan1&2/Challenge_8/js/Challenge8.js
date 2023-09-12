@@ -19,3 +19,15 @@ for (let i = 0; i < bills.length; i++) {
 console.log("List bill: ", bills);
 console.log("List tip: ", tips);
 console.log("List total: ", totals);
+
+//task 4 viet ham "calcAverage" tinh trung binh cua 1 mang
+function calcAverage(arr) {
+    let sum = 0;
+    for (let i = 0; i < arr.length; i++) {
+        sum += arr[i];
+    }
+    return (sum / arr.length);
+}
+//goi ham "calcAverage" voi mang "totals" va in ket qua
+const avg = calcAverage(totals);
+console.log("Average totals: ", avg);
