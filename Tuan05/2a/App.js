@@ -1,6 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import Reac, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, Image, TouchableHighlight } from 'react-native';
+import {
+  StyleSheet, Text, TextInput, View, Image, TouchableHighlight
+} from 'react-native';
 
 export default function App() {
   const [loginStatus, setLoginStatus] = useState(''); // Lưu trạng thái đăng nhập
