@@ -1,28 +1,68 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Button, TouchableHighlight } from 'react-native';
+import { StyleSheet, Text, View, Image, Button, TouchableHighlight, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 
 export default function pickColor() {
+    const [currentColor, setCurrentColor] = useState('blue');
+
+    const handleColorChange = (color) => {
+        setCurrentColor(color);
+    };
+    const colorInfoText = {
+        blue: 'xanh',
+        red: 'đỏ',
+        black: 'đen',
+        silver: 'bạc',
+    };
+
+    const colorImage = {
+        blue: require('../SellPhone/assets/vs_blue.png'),
+        red: require('../SellPhone/assets/vs_red.png'),
+        black: require('../SellPhone/assets/vs_black.png'),
+        silver: require('../SellPhone/assets/vs_silver.png'),
+    };
+
     return (
         <View style={styles.container} >
             <View style={styles.infoContainer}>
-                <Image style={styles.imgPhone} source={require('../SellPhone/assets/vs_blue.png')} />
+                <Image style={styles.imgPhone} source={colorImage[currentColor]} />
                 <View style={styles.textInfo}>
-                    <Text style={styles.txtPhoneName}>Điện Thoại Vsmart Joy 3 <br/>Hàng chính hãng</Text>
+                    <Text style={styles.txtPhoneName}>Điện Thoại Vsmart Joy 3 <br />Hàng chính hãng</Text>
                     <View style={styles.colorInfo}>
-                        <Text style={styles.colorInfoText}>Màu: <b>đỏ</b></Text>
-                        <Text style={styles.colorInfoText}>Cung cấp bởi <b>Tiki Trandding</b></Text>
-                        <Text style={styles.colorInfoText}>1.790.000 đ</Text>
+                        <Text style={styles.colorInfoText}>Màu:
+                            <Text style={{
+                                fontWeight: 'bold',
+                                fontFamily: 'roboto',
+                                fontSize: 15,
+                                margin: 5,
+                            }}>
+                                {colorInfoText[currentColor]}
+                            </Text>
+                        </Text>
+                        <Text style={styles.colorInfoText}>Cung cấp bởi <b>Tiki Tradding</b></Text>
+                        <Text style={styles.colorInfoText}><b>1.790.000 đ</b></Text>
                     </View>
                 </View>
             </View>
             <View style={styles.colorContainer}>
                 <Text style={styles.txtPickColor}>Chọn một màu bên dưới:</Text>
                 <View style={styles.color}>
-                    <View style={styles.color1} />
-                    <View style={styles.color2} />
-                    <View style={styles.color3} />
-                    <View style={styles.color4} />
+                    <TouchableOpacity
+                        style={styles.color1}
+                        onPress={() => handleColorChange('silver')}
+                    />
+                    <TouchableOpacity
+                        style={styles.color2}
+                        onPress={() => handleColorChange('red')}
+                    />
+                    <TouchableOpacity
+                        style={styles.color3}
+                        onPress={() => handleColorChange('black')}
+                    />
+                    <TouchableOpacity
+                        style={styles.color4}
+                        onPress={() => handleColorChange('blue')}
+                    />
                 </View>
                 <TouchableHighlight style={styles.buttonComplete}>
                     <Text style={styles.txtComplete}>XONG</Text>
@@ -48,17 +88,13 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     imgPhone: {
-        width: 150,
-        height: 170,
+        width: 140,
+        height: 160,
         margin: 5,
     },
     txtPhoneName: {
         fontFamily: 'roboto',
         fontSize: 15,
-        margin: 5,
-    },
-    txtInfo: {
-        flex: 1,
         margin: 5,
     },
     colorInfo: {
@@ -67,6 +103,7 @@ const styles = StyleSheet.create({
     colorInfoText: {
         fontFamily: 'roboto',
         fontSize: 15,
+        margin: 5,
     },
     colorContainer: {
         backgroundColor: '#C4C4C4',
@@ -86,7 +123,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     color1: {
-        backgroundColor: '#C5F1FB',
+        backgroundColor: '#E0FFFF',
         width: 80,
         height: 80,
     },
@@ -111,7 +148,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#1952E294',
         justifyContent: 'center',
         alignItems: 'center',
-        border: '1 solid #CA1536',
+        borderWidth: 1,
+        borderColor: '#CA1536',
         marginTop: 10,
         borderRadius: 5,
         alignSelf: 'center',
