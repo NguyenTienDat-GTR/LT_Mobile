@@ -1,4 +1,4 @@
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import mainScreen from './mainScreen';
 import pickColor from './pickColor';
@@ -9,7 +9,7 @@ const appNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="First"
+        initialRouteName="main"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="main" component={mainScreen} />

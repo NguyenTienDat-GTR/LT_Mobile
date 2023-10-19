@@ -1,13 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Button, TouchableHighlight, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableHighlight, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 
 export default function pickColor() {
     const [currentColor, setCurrentColor] = useState('blue');
 
+    const navigation = useNavigation();
+
     const handleColorChange = (color) => {
         setCurrentColor(color);
     };
+
     const colorInfoText = {
         blue: 'xanh',
         red: 'đỏ',
@@ -64,7 +67,11 @@ export default function pickColor() {
                         onPress={() => handleColorChange('blue')}
                     />
                 </View>
-                <TouchableHighlight style={styles.buttonComplete}>
+                <TouchableHighlight style={styles.buttonComplete}
+                    onPress={() => {
+                        navigation.navigate('main', { selectedColor: currentColor });
+                    }}
+                >
                     <Text style={styles.txtComplete}>XONG</Text>
                 </TouchableHighlight>
             </View>

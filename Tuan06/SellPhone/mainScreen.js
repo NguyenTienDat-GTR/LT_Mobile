@@ -1,16 +1,35 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Image, Button, TouchableHighlight } from 'react-native';
-import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-export default function mainScreen() {
-    const navigation = useNavigation();
-    const navigationToPickColor = () => {
-        navigation.navigate('pickColor');
+export default function mainScreen({ navigation }) {
+    //điểu hướng đến pickColor khi nhấn chọn màu
+    const navigationPickColor = useNavigation();
+
+    const navigationToPickColor = () => {   
+        navigationPickColor.navigate('pickColor');
     }
+    //-------------------------------------------
+    //lấy dữ liệu color từ pickColor để thay đổi màu ảnh điện thoại
+    const route = useRoute();
+    const [selectedColor, setSelectedColor] = useState('blue');
+    useEffect(() => {
+        if (route.params) {
+            const { selectedColor } = route.params;
+            setSelectedColor(selectedColor);
+        }
+    },
+        [route.params]
+    );
+    const colorImage = {
+        blue: require('../SellPhone/assets/vs_blue.png'),
+        red: require('../SellPhone/assets/vs_red.png'),
+        black: require('../SellPhone/assets/vs_black.png'),
+        silver: require('../SellPhone/assets/vs_silver.png'),
+    };
     return (
         <View style={styles.container} >
-            <Image style={styles.imgPhone} source={require('../SellPhone/assets/vs_blue.png')} />
+            <Image style={styles.imgPhone} source={colorImage[selectedColor]} />
             <View>
                 <text style={styles.textNamePhone}>Điện Thoại Vsmart Joy 3 - Hàng chính hãng</text>
                 <View style={styles.containerInfo}>
@@ -21,14 +40,14 @@ export default function mainScreen() {
                         <Image style={styles.star} source={require('../SellPhone/assets/star.png')} />
                         <Image style={styles.star} source={require('../SellPhone/assets/star.png')} />
                     </View>
-                    <text>(Xem 828 đánh giá)</text>
+                    <Text>(Xem 828 đánh giá)</Text>
                 </View>
                 <View style={styles.containerPrice}>
-                    <text>1.790.000 đ</text>
-                    <text style={styles.txtOriginalPrice}>1.790.000 đ</text>
+                    <Text>1.790.000 đ</Text>
+                    <Text style={styles.txtOriginalPrice}>1.790.000 đ</Text>
                 </View>
                 <View style={styles.containerSlogan}>
-                    <text style={styles.txtSlogan}>Ở ĐÂU RẺ HƠN HOÀN TIỀN</text>
+                    <Text style={styles.txtSlogan}>Ở ĐÂU RẺ HƠN HOÀN TIỀN</Text>
                     <Image style={styles.imgDetail} source={require('../SellPhone/assets/Group_1.png')} />
                 </View>
                 <TouchableHighlight style={styles.buttonPickColor} onPress={navigationToPickColor}>
