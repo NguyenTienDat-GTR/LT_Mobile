@@ -63,7 +63,7 @@ export default function Screen02() {
             setFilteredData(data.filter((item) => item.type === FilterType));
         }
     };
-    //chuyển sang màn hình 03
+    //chuyển sang màn hình 03, truyền item cho 03
     const navigationScreen03 = useNavigation();
     const navigationToScreen03 = (item) => {
         navigationScreen03.navigate('bikeDetail',{item});
