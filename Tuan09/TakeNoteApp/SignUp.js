@@ -21,7 +21,6 @@ export default function SignUp() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-
     const postData = async () => {
         try {
             const response = await fetch('https://6544382b5a0b4b04436c2915.mockapi.io/TakeNoteApp');
@@ -35,7 +34,7 @@ export default function SignUp() {
                         firstname: firstName,
                         lastname: lastName,
                         username: userName,
-                        password: password
+                        password: password,
                     }
                 ];
 
@@ -49,7 +48,7 @@ export default function SignUp() {
                         firstname: firstName,
                         lastname: lastName,
                         username: userName,
-                        password: password
+                        password: password,
                     })
                 });
 
@@ -126,6 +125,7 @@ export default function SignUp() {
         if (checkUserName() && checkConfirmPassword()) {
             postData().then(() => {
                 sendLastestDataToLogin(); // Gửi dữ liệu mới nhất về trang login sau khi đăng ký thành công
+                setIsSignUpSuccessful(true);
                 alert('Sign Up success');
             }).catch(error => {
                 console.error('Error during signup:', error);

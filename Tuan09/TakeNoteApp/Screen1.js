@@ -44,7 +44,6 @@ export default function Screen1() {
     }
     const updateData = async () => {
         const userData = await AsyncStorage.getItem('userData');
-        console.log('Data sau khi get:', userData);
         if (userData !== null) {
             setData(JSON.parse(userData));
         }
@@ -52,23 +51,18 @@ export default function Screen1() {
     //check login with data api
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [userData, setUserData] = useState(null);
     //const [isLoginSuccessful, setIsLoginSuccessful] = useState(false);
 
     // Hàm để nhận dữ liệu mới nhất từ SignUp và cập nhật vào trang login
 
-    const handelLogin = async () => {
+    const handleLogin = async () => {
         if (data) {
             const user = data.find(item => item.username === userName && item.password === password);
             console.log(data);
             if (user) {
-                const { firstname, lastname, username, password } = user;
-                setFirstName(firstname);
-                setLastName(lastname);
-                setUserName(username);
-                setPassword(password);
-                alert('Login success');
+                setUserData(user);
+                saveUserData(user);
             } else {
                 alert('Login fail');
             }
@@ -77,6 +71,16 @@ export default function Screen1() {
         }
     };
 
+    //lưu dữ liệu người dùng vừa đăng nhập vào async storage và chuyển đến note.js
+    const saveUserData = async (userData) => {
+        try {
+            await AsyncStorage.setItem('userData', JSON.stringify(userData));
+            navigation.navigate('Note');
+            console.log('data sau khi luu: ', userData);
+        } catch (error) {
+            console.error('Loi khi luu du lieu: ', error);
+        }
+    }
     //navigation
     const navigation = useNavigation();
 
@@ -120,7 +124,7 @@ export default function Screen1() {
                     </TouchableOpacity>
                 </View>
             </View>
-            <TouchableOpacity style={styles.btnGetStarted} onPress={handelLogin}>
+            <TouchableOpacity style={styles.btnGetStarted} onPress={handleLogin}>
                 <Text style={styles.txtGetStarted}>Get Started <Icon style={{ left: 10 }} name='arrow-right' size={20} color={'#fff'} /></Text>
             </TouchableOpacity>
         </View>
