@@ -59,7 +59,7 @@ export default function Screen1() {
     const handleLogin = async () => {
         if (data) {
             const user = data.find(item => item.username === userName && item.password === password);
-            console.log(data);
+            // console.log(data);
             if (user) {
                 setUserData(user);
                 saveUserData(user);
@@ -76,7 +76,7 @@ export default function Screen1() {
         try {
             await AsyncStorage.setItem('userData', JSON.stringify(userData));
             navigation.navigate('Note');
-            console.log('data sau khi luu: ', userData);
+            //console.log('data sau khi luu: ', userData);
         } catch (error) {
             console.error('Loi khi luu du lieu: ', error);
         }

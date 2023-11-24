@@ -25,6 +25,28 @@ export default function Note() {
         }
     }, [userData]);
 
+    // Hàm cập nhật trạng thái checkbox và màu sắc ban đầu từ dữ liệu API
+    const initializeCheckedItemsAndColors = (notes) => {
+        const initialCheckedItems = {};
+        const initialPriorityColor = {};
+
+        notes.forEach((note) => {
+            initialCheckedItems[note.task_id] = note.status === 'true'; // True nếu status là 'true', ngược lại là false
+
+            if (note.status === 'true') {
+                initialCheckedItems[note.task_id] = true;// Checkbox sẽ là checked nếu status là true
+                initialPriorityColor[note.task_id] = 'rgba(0, 215, 0, 0.5)'; // Màu xanh lá cho trạng thái checked
+                console.log('priority', initialPriorityColor[note.task_id]);
+            } else {
+                initialCheckedItems[note.task_id] = false; // Checkbox sẽ là unchecked nếu status là false
+                initialPriorityColor[note.task_id] = note.priority === 'High' ? 'rgba(255, 0, 0, 0.7)' : 'rgba(255, 215, 0, 0.5)'; // Màu đỏ hoặc vàng tương ứng với high và low
+            }
+        });
+
+        setCheckedItems(initialCheckedItems);
+        setPriorityColor(initialPriorityColor);
+    };
+
     //lay du lieu user từ asyncStorage sau khi login thanh cong
     const getUserData = async () => {
         try {
@@ -32,8 +54,7 @@ export default function Note() {
             if (jsonValue !== null) {
                 const data = JSON.parse(jsonValue);
                 setUserData(data);
-                //initializePriorityColors(data.note);
-                initializeCheckedItems(data.note);
+                initializeCheckedItemsAndColors(data.note);
             }
         } catch (error) {
             console.error('Loi khi lay du lieu nguoi dung: ', error);
@@ -51,14 +72,6 @@ export default function Note() {
 
         )
     }
-    //màu mặc định cuar priority là red nếu priority là high và yellow nếu priority là low
-    const initializePriorityColors = (notes) => {
-        const colors = {};
-        notes.forEach((note) => {
-            colors[note.task_id] = note.priority === 'High' ? 'rgba(255, 0, 0, 0.7)' : 'yellowrgba(255, 215, 0, 0.5)';
-        });
-        setPriorityColor(colors);
-    };
 
     // Cập nhật màu sắc của priority theo item.task_id
     const updatePriorityColor = (taskId, priority) => {
@@ -67,23 +80,48 @@ export default function Note() {
         setPriorityColor(colors);
     };
 
-    // Cập nhật màu của priority khi nhấn vào checkbox
-    const handleCheckboxPress = (taskId, priority) => {
+
+    // Hàm cập nhật trạng thái checkbox, màu sắc và trạng thái status tương ứng khi nhấn checkbox
+    const handleCheckboxPress = async (taskId, priority, currentStatus) => {
         const updatedCheckedItems = { ...checkedItems };
-        updatedCheckedItems[taskId] = !updatedCheckedItems[taskId]; // Đảo ngược trạng thái của item khi checkbox được nhấn
+        updatedCheckedItems[taskId] = !currentStatus;
         setCheckedItems(updatedCheckedItems);
 
         updatePriorityColor(taskId, priority);
+
+        const updatedUserData = { ...userData };
+        const updatedNote = updatedUserData.note.map((item) => {
+            if (item.task_id === taskId) {
+                item.status = !currentStatus ? 'true' : 'false';
+            }
+            return item;
+        });
+        updatedUserData.note = updatedNote;
+        setUserData(updatedUserData);
+
+        // Gửi yêu cầu cập nhật status lên API
+        try {
+            const response = await fetch(`https://6544382b5a0b4b04436c2915.mockapi.io/TakeNoteApp/${userData.id}`, {
+                method: 'PUT',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedUserData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error connecting to the network');
+            } else {
+                const responseData = await response.json();
+                console.log('Updated data:', responseData);
+            }
+        } catch (error) {
+            console.error('Error updating data: ', error);
+        }
     };
 
-    //khởi tạo mảng checkedItems để lưu trữ trạng thái của checkbox
-    const initializeCheckedItems = (notes) => {
-        const items = {};
-        notes.forEach((note) => {
-            items[note.task_id] = false; // Khởi tạo mỗi item với trạng thái unchecked ban đầu
-        });
-        setCheckedItems(items);
-    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -139,7 +177,7 @@ export default function Note() {
                                         color={'blue'}
                                         size={40}
                                         onPress={() => {
-                                            handleCheckboxPress(item.task_id, item.priority);
+                                            handleCheckboxPress(item.task_id, item.priority, checkedItems[item.task_id]);
                                         }}
                                     />
                                 </View>
@@ -152,12 +190,19 @@ export default function Note() {
                                         <Text style={styles.customText}>{item.date}</Text>
                                     </Text>
                                     <Text style={styles.txtTaskStatus}>Status:
-                                        <Text style={styles.customText}>{item.status}</Text>
+                                        <Text style={styles.customText}>
+                                            {checkedItems[item.task_id] ? 'Complete' : item.status === 'true' ? 'Complete' : 'Incomplete'}
+                                        </Text>
                                     </Text>
                                 </View>
-                                <TouchableOpacity style={styles.btnDeleteTask}>
-                                    <Icon style={styles.crash} name='trash' size={30} color={'rgba(0,0,0,0.5)'} />
-                                </TouchableOpacity>
+                                <View style={styles.containerEditAndDeleteTask}>
+                                    <TouchableOpacity style={styles.btnEditTask}>
+                                        <Icon style={styles.crash} name='edit' size={30} color={'rgba(0,0,0,0.5)'} />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.btnDeleteTask}>
+                                        <Icon style={styles.crash} name='trash' size={30} color={'rgba(0,0,0,0.5)'} />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </TouchableOpacity>
                     )}
@@ -266,15 +311,16 @@ const styles = StyleSheet.create({
         width: '90%',
         height: 100,
         backgroundColor: 'rgba(248,248,255,1)',
+        boxShadow: '2px 2px 10px #aaaaaa',
         borderRadius: 10,
         marginTop: 15,
-        justifyContent: 'center', // Canh giữa theo chiều dọc
-        alignItems: 'flex-start', // Canh theo chiều ngang bên trái
+        justifyContent: 'center',
+        alignItems: 'flex-start',
         alignSelf: 'center',
         position: 'relative',
     },
     taskContent: {
-        width: '100%',
+        width: 200,
         height: '100%',
         justifyContent: 'space-evenly',
         alignItems: 'flex-start',
@@ -314,9 +360,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: 'Roboto',
     },
-    btnDeleteTask: {
+    containerEditAndDeleteTask: {
         height: '100%',
-        justifyContent: 'center',
-        left: 40,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 10,
+        position: 'absolute',
+        right: -100,
     },
+
 });
