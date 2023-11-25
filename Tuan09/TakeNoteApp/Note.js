@@ -1,23 +1,32 @@
-import React from 'react';
 import {
-    StyleSheet, Text, View, Image, TouchableOpacity, TextInput, FlatList, ActivityIndicator
+    StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, ActivityIndicator, Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Checkbox } from 'react-native-paper';
+import DatePickerComponent from './controls/datePicker';
+import { RadioButton } from 'react-native-paper';
+
 
 export default function Note() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const [checked, setChecked] = useState(false);//theo doi trang thai checkbox
+    const [isModalVisible, setModalVisible] = useState(false);//theo doi trang thai modal
 
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+    const [dueDate, setDueDate] = useState('');
+
+
+    // Định nghĩa state mới để lưu trữ giá trị của priority
+    const [priority, setPriority] = useState('High');
     // Định nghĩa state mới để lưu trữ màu của item.priority
     const [priorityColor, setPriorityColor] = useState({});
 
-    const [checkedItems, setCheckedItems] = useState([]);
+    const [checkedItems, setCheckedItems] = useState({});
 
     useEffect(() => {
         if (!userData) {
@@ -36,7 +45,6 @@ export default function Note() {
             if (note.status === 'true') {
                 initialCheckedItems[note.task_id] = true;// Checkbox sẽ là checked nếu status là true
                 initialPriorityColor[note.task_id] = 'rgba(0, 215, 0, 0.5)'; // Màu xanh lá cho trạng thái checked
-                console.log('priority', initialPriorityColor[note.task_id]);
             } else {
                 initialCheckedItems[note.task_id] = false; // Checkbox sẽ là unchecked nếu status là false
                 initialPriorityColor[note.task_id] = note.priority === 'High' ? 'rgba(255, 0, 0, 0.7)' : 'rgba(255, 215, 0, 0.5)'; // Màu đỏ hoặc vàng tương ứng với high và low
@@ -114,16 +122,32 @@ export default function Note() {
                 throw new Error('Error connecting to the network');
             } else {
                 const responseData = await response.json();
-                console.log('Updated data:', responseData);
+                //console.log('Updated data:', responseData);
             }
         } catch (error) {
             console.error('Error updating data: ', error);
         }
     };
+    // //xử lí btn Create Task
 
+    // const handleCreateTask = () => {
+    //     console.log('isModalVisible before set:', isModalVisible);
+    //     setModalVisible(!isModalVisible); // Chuyển đổi giá trị ngược lại
+    //     console.log('isModalVisible after set:', isModalVisible);
+    // }
+
+    // Hàm này sẽ được gọi từ DatePickerComponent để cập nhật ngày được chọn
+    const handleDueDateChange = date => {
+        setDueDate(date);
+        setDatePickerVisible(false); // Ẩn DatePickerComponent sau khi chọn ngày
+    };
+
+    const handlePriorityChange = (value) => {
+        setPriority(value);
+    }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { opacity: isModalVisible ? 0.4 : 1 }]}>
             <View style={styles.header}>
                 <Icon name='arrow-left' size={30} color={'rgba(255,255,255,1)'} />
                 <Text style={styles.txtWellcome}>
@@ -143,7 +167,7 @@ export default function Note() {
                 </TouchableOpacity>
             </View>
             <View style={styles.createTaskContainer}>
-                <TouchableOpacity style={styles.btnAddTask}>
+                <TouchableOpacity style={styles.btnAddTask} onPress={() => setModalVisible(true)} >
                     <Text style={styles.btnText}>Create Task</Text>
                     <Icon style={styles.btnIcon} name='plus' size={30} color={'#fff'} />
                 </TouchableOpacity>
@@ -209,6 +233,79 @@ export default function Note() {
                     numColumns={1}
                 />
             </View>
+            <Modal
+                visible={isModalVisible}
+                animationType='slide'
+                transparent={true}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainerParent}>
+                    <View style={styles.modalContainer}>
+                        <View style={styles.titleModalCreateTaskContainer}>
+                            <Text style={styles.txtTitleModalCreateTask}>Create Task</Text>
+                        </View>
+                        <View style={styles.inputCreateTaskContainer}>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Task Title:</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Enter task title...'
+                                    placeholderTextColor='rgba(0,0,0,0.5)' />
+                            </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Due Date:</Text>
+                                <View style={styles.chooseDateContainer}>
+                                    <Text style={[styles.input, { padding: 0, paddingLeft: 10 }]} >Selected Date</Text>
+                                    <TouchableOpacity style={styles.btnChooseDate} onPress={() => setDatePickerVisible(true)}>
+                                        <Icon name="calendar" size={30} color={'rgba(0,0,0,0.5)'} />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={[styles.label, { width: '40%' }]}>Task Priority:</Text>
+                                <View style={styles.radioContainer}>
+                                    <RadioButton.Group onValueChange={handlePriorityChange} value={priority}>
+                                        <View style={styles.radioOption}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', width: '100%', gap: 20 }}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <RadioButton value="High" />
+                                                    <View>
+                                                        <Text>Hight</Text>
+                                                    </View>
+                                                </View>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <RadioButton value="Low" />
+                                                    <View>
+                                                        <Text>Low</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </RadioButton.Group>
+                                </View>
+                            </View>
+                            <View style={[styles.inputContainer, { flexDirection: 'column', height: 160 }]}>
+                                <Text style={[styles.label, { width: '40%' }]}>Task Content:</Text>
+                                <TextInput
+                                    style={[styles.input, { height: 150, width: '95%' }]}
+                                    placeholder='Enter task content...'
+                                    placeholderTextColor='rgba(0,0,0,0.5)'
+                                    multiline={true}
+                                    numberOfLines={4}
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.buttonModalContainer}>
+                            <TouchableOpacity style={styles.buttonSaveModal} onPress={() => setModalVisible(false)}>
+                                <Text style={styles.txtBtnModal}>Create</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.buttonSaveModal} onPress={() => setModalVisible(false)}>
+                                <Text style={styles.txtBtnModal}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal >
         </View >
     );
 }
@@ -368,5 +465,128 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: -100,
     },
-
+    modalContainerParent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        width: '90%',
+        height: '70%',
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        borderRadius: 10,
+        boxShadow: '2px 2px 10px #aaaaaa',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    titleModalCreateTaskContainer: {
+        width: '100%',
+        height: 50,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.5)',
+        top: 5,
+    },
+    txtTitleModalCreateTask: {
+        width: '100%',
+        height: '10%',
+        fontSize: 30,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        fonFamily: 'Roboto',
+    },
+    inputCreateTaskContainer: {
+        width: '100%',
+        height: '90%',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        padding: 10,
+        top: 20,
+    },
+    inputContainer: {
+        width: '100%',
+        height: 50,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        flexDirection: 'row',
+        gap: 5,
+        position: 'relative',
+    },
+    label: {
+        width: '30%',
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: 17,
+        fontWeight: 'bold',
+    },
+    input: {
+        width: '70%',
+        height: 30,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 10,
+        fontSize: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.5)',
+    },
+    chooseDateContainer: {
+        width: '70%',
+        height: 30,
+        backgroundColor: '#fff',
+        fontSize: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    datePickerContainer: {
+        position: 'absolute',
+        top: '50%'/* Điều chỉnh vị trí theo yếu cầu của bạn */,
+        left: '50%'/* Điều chỉnh vị trí theo yếu cầu của bạn */,
+        zIndex: 1, // Đảm bảo DatePickerComponent hiển thị trên các phần tử khác
+        backgroundColor: '#fff', // Tuỳ chỉnh màu sắc hoặc bố cục cho DatePickerComponent container
+        borderRadius: 10,
+        // Các thuộc tính khác tùy chỉnh theo yêu cầu của bạn
+    },
+    btnChooseDate: {
+        right: 20,
+    },
+    radioContainer: {
+        flexDirection: 'row',
+        width: '60%',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        top: -5,
+    },
+    radioOption: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    buttonModalContainer: {
+        width: '95%',
+        height: '60',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        padding: 10,
+        marginTop: -50,
+    },
+    buttonSaveModal: {
+        width: '40%',
+        height: '100%',
+        backgroundColor: '#00BFFF',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: -20,
+    },
+    txtBtnModal: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+        alignSelf: 'center',
+    },
 });
